@@ -57,9 +57,9 @@
             </div>
 
             <div class="code-actions">
-                <button onclick="copyCode()" class="btn btn-success">📋 Copy to Clipboard</button>
-                <button onclick="downloadCode()" class="btn btn-primary">💾 Download File</button>
-                <a href="{{ url_for('index') }}" class="btn btn-secondary">🔄 Generate New Code</a>
+                <button onclick="copyCode(event)" class="btn btn-success">Copy</button>
+                <button onclick="downloadCode()" class="btn btn-primary">Download File</button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Generate New Code</a>
             </div>
         </div>
 
@@ -137,23 +137,55 @@
             }
         });
 
-        function copyCode() {
+        function copyCode(event) {
             const code = sessionStorage.getItem('generatedCode');
-            navigator.clipboard.writeText(code).then(() => {
-                const btn = event.target;
-                const originalText = btn.textContent;
-                btn.textContent = '✅ Copied!';
-                btn.classList.remove('btn-success');
-                btn.classList.add('btn-secondary');
+            if (!code) {
+                alert('No code to copy');
+                return;
+            }
+            
+            // Create a temporary textarea to copy from
+            const textarea = document.createElement('textarea');
+            textarea.value = code;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textarea);
                 
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.classList.remove('btn-secondary');
-                    btn.classList.add('btn-success');
-                }, 2000);
-            }).catch(err => {
-                alert('Failed to copy code: ' + err);
-            });
+                if (successful) {
+                    const btn = event.target.tagName === 'BUTTON' ? event.target : event.target.closest('button');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '✅ Copied!';
+                    btn.disabled = true;
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                } else {
+                    alert('Failed to copy code');
+                }
+            } catch (err) {
+                document.body.removeChild(textarea);
+                // Fallback to modern clipboard API
+                navigator.clipboard.writeText(code).then(() => {
+                    const btn = event.target.tagName === 'BUTTON' ? event.target : event.target.closest('button');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '✅ Copied!';
+                    btn.disabled = true;
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                }).catch(err => {
+                    alert('Failed to copy code: ' + err);
+                });
+            }
         }
 
         async function downloadCode() {
