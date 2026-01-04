@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>oneM2M Code Generator - Select Controller</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-main">
+                <div class="header-branding">
+                    <div class="header-icon">🚀</div>
+                    <div class="header-text">
+                        <h1>oneM2M Code Generator</h1>
+                        <p class="header-subtitle">Generate production-ready client code in seconds</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-label">Select Platform</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-label">Configure</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Generate</div>
+            </div>
+        </div>
+
+        <div class="section-header" id="platforms">
+            <h2>Select Your Platform</h2>
+            <p class="section-subtitle">Choose the target platform to generate optimized oneM2M client code</p>
+        </div>
+
+        <div class="controller-list">
+            <a href="{{ url_for('configure', controller='arduino_nano') }}" class="controller-card" data-platform="arduino">
+                <div class="card-icon">
+                    <div class="icon-circle">🔧</div>
+                </div>
+                <div class="card-content">
+                    <h3>Arduino Nano 33 IoT</h3>
+                    <p>WiFiNINA library • Built-in WiFi & Bluetooth • Low power IoT applications</p>
+                </div>
+                <div class="card-arrow">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </a>
+
+            <a href="{{ url_for('configure', controller='esp32') }}" class="controller-card" data-platform="esp32">
+                <div class="card-icon">
+                    <div class="icon-circle">⚡</div>
+                </div>
+                <div class="card-content">
+                    <h3>ESP32</h3>
+                    <p>Dual-core processor • WiFi & Bluetooth • High-performance embedded systems</p>
+                </div>
+                <div class="card-arrow">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </a>
+
+            <a href="{{ url_for('configure', controller='esp8266') }}" class="controller-card" data-platform="esp8266">
+                <div class="card-icon">
+                    <div class="icon-circle">📡</div>
+                </div>
+                <div class="card-content">
+                    <h3>ESP8266</h3>
+                    <p>Compact design • WiFi enabled • Cost-effective IoT solutions</p>
+                </div>
+                <div class="card-arrow">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </a>
+
+            <a href="{{ url_for('configure', controller='python') }}" class="controller-card" data-platform="python">
+                <div class="card-icon">
+                    <div class="icon-circle">🐍</div>
+                </div>
+                <div class="card-content">
+                    <h3>Python</h3>
+                    <p>Cross-platform • PC, Raspberry Pi, Server • Easy integration & deployment</p>
+                </div>
+                <div class="card-arrow">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </a>
+        </div>
+
+        <div class="info-banner">
+            <div class="info-icon">💡</div>
+            <div class="info-content">
+                <strong>Quick Start:</strong> Select your platform → Configure server settings → Define data parameters → Download ready-to-use code
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-center">
+            <p>oneM2M Code Generator &copy; 2025</p>
+        </div>
+        <a href="https://himanshu-portfolio-beryl.vercel.app/" target="_blank" class="developer-credit">
+            &lt;/&gt; Developed by Himanshu Fanibhare
+        </a>
+    </div>
+</body>
+</html>

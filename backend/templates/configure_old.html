@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>oneM2M Code Generator - Configure</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-main">
+                <div class="header-branding">
+                    <div class="header-icon">🚀</div>
+                    <div class="header-text">
+                        <h1>oneM2M Code Generator</h1>
+                        <p class="header-subtitle">Configure your oneM2M client settings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="progress-steps">
+        <a href="{{ url_for('index') }}" class="step completed" style="text-decoration: none; color: inherit;">
+            <div class="step-number">✓</div>
+            <div class="step-label">Select Platform</div>
+        </a>
+        <div class="step-connector completed"></div>
+        <div class="step active">
+            <div class="step-number">2</div>
+            <div class="step-label">Configure</div>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-label">Generate</div>
+        </div>
+    </div>
+
+    <div class="container config-container">
+        <form id="configForm">
+            <input type="hidden" name="controller" value="{{ controller }}">
+
+            <!-- Tab Navigation -->
+            <div class="config-tabs">
+                <button type="button" class="tab-button active" data-tab="server">
+                    Server Configuration
+                </button>
+                <button type="button" class="tab-button" data-tab="operation">
+                    Operation Type
+                </button>
+                <button type="button" class="tab-button" data-tab="parameters">
+                    Data Parameters
+                </button>
+            </div>
+
+            <!-- Tab Panels -->
+            <div class="tab-panels">
+                <!-- Server Configuration Tab -->
+                <div class="tab-panel active" id="server-tab">
+                    <div class="config-section">
+                        <div class="section-header">
+                            <h2>Server Configuration</h2>
+                            <p class="section-description">Connect to your oneM2M server instance</p>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cse_url">oneM2M Server Host <span class="required">*</span></label>
+                                <input type="text" id="cse_url" name="cse_url" 
+                                       placeholder="onem2m.iiit.ac.in" required>
+                                <span class="error-message"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="port">Server Port <span class="required">*</span></label>
+                                <input type="number" id="port" name="port" 
+                                       placeholder="Port 443 = HTTPS | Other ports = HTTP" required>
+                                <span class="error-message"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ae_name">Application Entity (AE) <span class="required">*</span></label>
+                                <input type="text" id="ae_name" name="ae_name" 
+                                       placeholder="AE-SL" required>
+                                <span class="error-message"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="container_name">Container Name <span class="required">*</span></label>
+                                <input type="text" id="container_name" name="container_name" 
+                                       placeholder="SL-VN03-00" required>
+                                <span class="error-message"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="origin">Authentication (X-M2M-Origin) <span class="required">*</span></label>
+                                <input type="text" id="origin" name="origin" 
+                                       placeholder="admin:admin" required>
+                                <span class="error-message"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-actions">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Previous
+                        </a>
+
+                        <button type="button" class="btn btn-primary" onclick="switchToTab('operation')">
+                            Next
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left: 0.5rem;">
+                                <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Operation Type Tab -->
+                <div class="tab-panel" id="operation-tab">
+                    <div class="config-section">
+                        <div class="section-header">
+                            <h2>Operation Type</h2>
+                            <p class="section-description">Choose how your client will interact with the server</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="operation">Select Operation <span class="required">*</span></label>
+                            <select id="operation" name="operation" required>
+                                <option value="POST">POST - Send data to server</option>
+                                <option value="GET">GET - Retrieve data from server</option>
+                            </select>
+                        </div>
+
+                        <!-- Test Operation Section -->
+                        <div id="testSection" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                            <div class="section-header">
+                                <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Test Connection</h3>
+                                <p class="section-description" style="font-size: 0.875rem;">Test your configuration before generating code</p>
+                            </div>
+
+                            <div id="testButtonContainer" style="margin-top: 1rem;">
+                                <button type="button" id="testButton" class="btn btn-primary" onclick="testOperation()" disabled>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 0.5rem;">
+                                        <path d="M2 8L6 12L14 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    <span id="testButtonText">Test Connection</span>
+                                </button>
+                                <button type="button" id="testGetAutoBtn" class="btn btn-primary" onclick="testGetAuto()" style="display:none;">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right: 0.5rem;">
+                                        <path d="M13 3L3 13M13 3H7M13 3V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    Auto-Test GET
+                                </button>
+                            </div>
+
+                            <!-- Test Response Panel -->
+                            <div id="testResponsePanel" style="display:none; margin-top: 1rem;">
+                                <div style="background: #f5f5f5; border-radius: 8px; padding: 1rem; border: 1px solid var(--border-color);">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 600;">Response</h4>
+                                        <span id="testStatusBadge" style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.8rem; font-weight: 600;"></span>
+                                    </div>
+                                    <div style="background: white; border-radius: 4px; padding: 0.75rem; border: 1px solid #ddd;">
+                                        <pre id="testResponseContent" style="margin: 0; font-size: 0.85rem; white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; max-height: 300px; overflow-y: auto;"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-actions">
+                        <button type="button" class="btn btn-secondary" onclick="switchToTab('server')">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Previous
+                        </button>
+
+                        <button type="button" id="nextToParamsBtn" class="btn btn-primary" onclick="switchToTab('parameters')">
+                            Next
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left: 0.5rem;">
+                                <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data Parameters Tab -->
+                <div class="tab-panel" id="parameters-tab">
+                    <div class="config-section">
+                        <div class="section-header">
+                            <h2>Data Parameters</h2>
+                            <p class="section-description">Define the data fields your client will send or receive</p>
+                        </div>
+
+                        <div id="parametersContainer" class="parameters-grid">
+                            <!-- Parameters will be added here dynamically -->
+                        </div>
+
+                        <div style="margin-top:1rem; display:flex; gap:0.75rem; align-items:center;">
+                            <button type="button" class="btn btn-secondary" onclick="addParameter()">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right:6px;">
+                                    <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                </svg>
+                                Add Parameter
+                            </button>
+
+                            <div style="color:var(--text-tertiary); font-size:0.875rem;">You can add up to 20 fields</div>
+                        </div>
+
+                        <!-- Labels Section -->
+                        <div class="config-section" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                            <div class="section-header">
+                                <h3 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Labels (Optional)</h3>
+                                <p class="section-description" style="font-size: 0.875rem;">Add labels to categorize your data</p>
+                            </div>
+
+                            <div id="labelsContainer" class="parameters-grid">
+                                <!-- Labels will be added here dynamically -->
+                            </div>
+
+                            <div style="margin-top:1rem; display:flex; gap:0.75rem; align-items:center;">
+                                <button type="button" class="btn btn-secondary" onclick="addLabel()">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-right:6px;">
+                                        <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                    Add Label
+                                </button>
+
+                                <div style="color:var(--text-tertiary); font-size:0.875rem;">You can add up to 10 labels</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-actions">
+                        <button type="button" class="btn btn-secondary" onclick="switchToTab('operation')">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Previous
+                        </button>
+
+                        <button type="button" class="btn btn-primary" onclick="document.querySelector('.btn-generate').scrollIntoView({behavior:'smooth', block:'center'})">
+                            Next
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="margin-left: 0.5rem;">
+                                <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Section -->
+            <div class="action-section" id="actionSection">
+                <div class="action-content">
+                    <div class="action-info">
+                        <h3 id="actionTitle">Test your configuration first</h3>
+                        <p id="actionDescription">Complete server configuration and test your connection before generating code.</p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Back
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-generate" id="generateBtn" disabled>
+                            Generate Code
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Form validation state
+        let formIsValid = false;
+        let hasAttemptedSubmit = false; // Track if user has tried to submit
+        let testPassed = false; // Track if test was successful
+        let currentOperation = 'POST'; // Track current operation type
+
+        // Tab switching functionality
+        function initTabs() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+
+            console.log('initTabs: found', tabButtons.length, 'tab buttons');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.getAttribute('data-tab');
+                    switchToTab(targetTab);
+                });
+            });
+        }
+        
+        function switchToTab(tabName) {
+            console.log('switchToTab ->', tabName);
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanels = document.querySelectorAll('.tab-panel');
+            
+            // Remove active class from all buttons and panels
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabPanels.forEach(panel => panel.classList.remove('active'));
+
+            // Add active class to target button and panel
+            const targetButton = document.querySelector(`[data-tab="${tabName}"]`);
+            const targetPanel = document.getElementById(`${tabName}-tab`);
+            
+            if (targetButton) targetButton.classList.add('active');
+            if (targetPanel) targetPanel.classList.add('active');
+        }
+
+        // Operation type change handler
+        function onOperationChange() {
+            const operation = document.getElementById('operation').value;
+            currentOperation = operation;
+            const parametersTab = document.querySelector('[data-tab="parameters"]');
+            const parametersPanel = document.getElementById('parameters-tab');
+            const nextBtn = document.getElementById('nextToParamsBtn');
+            const testButton = document.getElementById('testButton');
+            const testGetAutoBtn = document.getElementById('testGetAutoBtn');
+            
+            // Reset test state when operation changes
+            testPassed = false;
+            updateGenerateButton();
+            hideTestResponse();
+            
+            if (operation === 'GET') {
+                // Hide parameters tab for GET
+                if (parametersTab) parametersTab.style.display = 'none';
+                if (nextBtn) nextBtn.style.display = 'none';
+                
+                // Show auto-test button for GET
+                if (testButton) testButton.style.display = 'none';
+                if (testGetAutoBtn) testGetAutoBtn.style.display = 'inline-flex';
+                
+            } else {
+                // Show parameters tab for POST
+                if (parametersTab) parametersTab.style.display = '';
+                if (nextBtn) nextBtn.style.display = '';
+                
+                // Show test button for POST
+                if (testButton) testButton.style.display = 'inline-flex';
+                if (testGetAutoBtn) testGetAutoBtn.style.display = 'none';
+            }
+            
+            // Enable test button if basic config is filled
+            updateTestButton();
+        }
+
+        // Update test button state
+        function updateTestButton() {
+            const testButton = document.getElementById('testButton');
+            const testGetAutoBtn = document.getElementById('testGetAutoBtn');
+            
+            const cseUrl = document.getElementById('cse_url').value.trim();
+            const port = document.getElementById('port').value.trim();
+            const aeName = document.getElementById('ae_name').value.trim();
+            const containerName = document.getElementById('container_name').value.trim();
+            const origin = document.getElementById('origin').value.trim();
+            
+            const basicConfigFilled = cseUrl && port && aeName && containerName && origin;
+            
+            if (testButton) testButton.disabled = !basicConfigFilled;
+            if (testGetAutoBtn) testGetAutoBtn.disabled = !basicConfigFilled;
+        }
+
+        // Test GET operation automatically
+        async function testGetAuto() {
+            await testOperation();
+        }
+
+        // Test operation function
+        async function testOperation() {
+            const testButton = document.getElementById('testButton');
+            const testGetAutoBtn = document.getElementById('testGetAutoBtn');
+            const operation = document.getElementById('operation').value;
+            
+            // Disable buttons during test
+            if (testButton) testButton.disabled = true;
+            if (testGetAutoBtn) testGetAutoBtn.disabled = true;
+            
+            // Update button text
+            const buttonText = document.getElementById('testButtonText');
+            if (buttonText) buttonText.textContent = 'Testing...';
+            
+            try {
+                const port = parseInt(document.getElementById('port').value);
+                const protocol = (port === 443) ? 'https' : 'http';
+                
+                const config = {
+                    protocol: protocol,
+                    cse_url: document.getElementById('cse_url').value.trim(),
+                    port: port,
+                    ae_name: document.getElementById('ae_name').value.trim(),
+                    container_name: document.getElementById('container_name').value.trim(),
+                    origin: document.getElementById('origin').value.trim()
+                };
+                
+                let endpoint = '/test-get';
+                
+                if (operation === 'POST') {
+                    endpoint = '/test-post';
+                    
+                    // Collect parameters and labels for POST
+                    const parameters = [];
+                    for (let i = 0; i < parameterCount; i++) {
+                        const name = document.querySelector(`[name="param_name_${i}"]`)?.value || '';
+                        const type = document.querySelector(`[name="param_type_${i}"]`)?.value || 'string';
+                        const defaultVal = document.querySelector(`[name="param_default_${i}"]`)?.value || '';
+                        
+                        if (name) {
+                            parameters.push({
+                                name: name,
+                                type: type,
+                                default: defaultVal || '0'
+                            });
+                        }
+                    }
+                    
+                    const labels = [];
+                    for (let i = 0; i < labelCount; i++) {
+                        const labelValue = document.querySelector(`[name="label_${i}"]`)?.value;
+                        if (labelValue && labelValue.trim()) {
+                            labels.push(labelValue.trim());
+                        }
+                    }
+                    
+                    config.parameters = parameters;
+                    config.labels = labels;
+                }
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showTestResponse(true, result.status_code, result.response, result.url);
+                    testPassed = true;
+                } else {
+                    showTestResponse(false, result.status_code || 'Error', result.error || result.response || 'Test failed', result.url);
+                    testPassed = false;
+                }
+                
+            } catch (error) {
+                showTestResponse(false, 'Error', `Test failed: ${error.message}`);
+                testPassed = false;
+            } finally {
+                // Re-enable buttons
+                if (testButton) {
+                    testButton.disabled = false;
+                    if (buttonText) buttonText.textContent = 'Test Connection';
+                }
+                if (testGetAutoBtn) testGetAutoBtn.disabled = false;
+                
+                updateGenerateButton();
+            }
+        }
+
+        // Show test response
+        function showTestResponse(success, statusCode, responseText, url = '') {
+            const panel = document.getElementById('testResponsePanel');
+            const badge = document.getElementById('testStatusBadge');
+            const content = document.getElementById('testResponseContent');
+            
+            if (!panel || !badge || !content) return;
+            
+            panel.style.display = 'block';
+            
+            if (success) {
+                badge.style.background = '#d4edda';
+                badge.style.color = '#155724';
+                badge.textContent = `✓ ${statusCode}`;
+            } else {
+                badge.style.background = '#f8d7da';
+                badge.style.color = '#721c24';
+                badge.textContent = `✗ ${statusCode}`;
+            }
+            
+            // Try to pretty-print JSON response
+            let displayText = responseText;
+            try {
+                const jsonObj = JSON.parse(responseText);
+                displayText = JSON.stringify(jsonObj, null, 2);
+            } catch (e) {
+                // Not JSON, display as is
+            }
+            
+            if (url) {
+                content.textContent = `URL: ${url}\n\n${displayText}`;
+            } else {
+                content.textContent = displayText;
+            }
+        }
+
+        // Hide test response
+        function hideTestResponse() {
+            const panel = document.getElementById('testResponsePanel');
+            if (panel) panel.style.display = 'none';
+        }
+
+        // Update generate button state
+        function updateGenerateButton() {
+            const generateBtn = document.getElementById('generateBtn');
+            const actionTitle = document.getElementById('actionTitle');
+            const actionDescription = document.getElementById('actionDescription');
+            
+            if (!generateBtn) return;
+            
+            if (testPassed) {
+                generateBtn.disabled = false;
+                generateBtn.style.opacity = '1';
+                generateBtn.style.cursor = 'pointer';
+                if (actionTitle) actionTitle.textContent = 'Ready to generate code';
+                if (actionDescription) actionDescription.textContent = 'Test passed! You can now generate device-specific code.';
+            } else {
+                generateBtn.disabled = true;
+                generateBtn.style.opacity = '0.6';
+                generateBtn.style.cursor = 'not-allowed';
+                if (actionTitle) actionTitle.textContent = 'Test your configuration first';
+                if (actionDescription) actionDescription.textContent = 'Complete server configuration and test your connection before generating code.';
+            }
+        }
+
+        // Validation functions
+        function validateField(field) {
+            const value = field.value.trim();
+            const group = field.closest('.form-group');
+            const errorMsg = group ? group.querySelector('.error-message') : null;
+            let isValid = true;
+            let message = '';
+
+            if (field.hasAttribute('required') && !value) {
+                isValid = false;
+                message = 'This field is required';
+            } else if (field.type === 'number') {
+                const num = parseInt(value);
+                const min = parseInt(field.getAttribute('min'));
+                const max = parseInt(field.getAttribute('max'));
+                
+                if (isNaN(num)) {
+                    isValid = false;
+                    message = 'Please enter a valid number';
+                } else if (min && num < min) {
+                    isValid = false;
+                    message = `Minimum value is ${min}`;
+                } else if (max && num > max) {
+                    isValid = false;
+                    message = `Maximum value is ${max}`;
+                }
+            } else if (field.type === 'text' && field.name && field.name.includes('port')) {
+                const port = parseInt(value);
+                if (isNaN(port) || port < 1 || port > 65535) {
+                    isValid = false;
+                    message = 'Port must be between 1 and 65535';
+                }
+            }
+
+            // Only update UI if user has attempted to submit
+            if (hasAttemptedSubmit && group) {
+                if (!isValid) {
+                    group.classList.add('error');
+                    if (errorMsg) errorMsg.textContent = message;
+                } else {
+                    group.classList.remove('error');
+                    if (errorMsg) errorMsg.textContent = '';
+                }
+            }
+
+            return isValid;
+        }
+
+        function validateAllParameters() {
+            let allValid = true;
+
+            for (let i = 0; i < parameterCount; i++) {
+                const nameField = document.querySelector(`[name="param_name_${i}"]`);
+                const typeField = document.querySelector(`[name="param_type_${i}"]`);
+                
+                if (nameField && !validateField(nameField)) {
+                    allValid = false;
+                }
+                if (typeField && !validateField(typeField)) {
+                    allValid = false;
+                }
+            }
+
+            return allValid;
+        }
+
+        function validateForm() {
+            const requiredFields = [
+                document.getElementById('protocol'),
+                document.getElementById('cse_url'),
+                document.getElementById('port'),
+                document.getElementById('ae_name'),
+                document.getElementById('container_name'),
+                document.getElementById('origin'),
+                document.getElementById('operation')
+            ];
+
+            let allValid = true;
+
+            // Validate basic fields
+            requiredFields.forEach(field => {
+                if (field && !validateField(field)) {
+                    allValid = false;
+                }
+            });
+
+            // Validate parameters
+            if (!validateAllParameters()) {
+                allValid = false;
+            }
+
+            formIsValid = allValid;
+            return allValid;
+        }
+
+        // Generate parameter fields
+        let parameterCount = 1;
+        let labelCount = 1;
+        
+        function generateParameterFields() {
+            const container = document.getElementById('parametersContainer');
+            container.innerHTML = '';
+            
+            const grid = document.createElement('div');
+            grid.className = 'parameters-grid';
+
+            for (let i = 0; i < parameterCount; i++) {
+                const paramCard = document.createElement('div');
+                paramCard.className = 'parameter-card';
+                paramCard.innerHTML = `
+                    <div class="param-header">
+                        <span class="param-badge">Parameter ${i + 1}</span>
+                        ${parameterCount > 1 ? `<button type="button" class="btn-remove-param" onclick="removeParameter(${i})" aria-label="Remove parameter">×</button>` : ''}
+                    </div>
+                    <div class="param-fields">
+                        <div class="form-group">
+                            <label>Field Name <span class="required">*</span></label>
+                            <input type="text" name="param_name_${i}" 
+                                   placeholder="temperature | humidity | status" required>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Data Type <span class="required">*</span></label>
+                            <select name="param_type_${i}" required>
+                                <option value="">Select type...</option>
+                                <option value="int">Integer</option>
+                                <option value="float">Decimal</option>
+                                <option value="string">Text</option>
+                                <option value="boolean">True/False</option>
+                            </select>
+                            <span class="error-message"></span>
+                        </div>
+                        <div class="form-group">
+                            <label>Default Value</label>
+                            <input type="text" name="param_default_${i}" 
+                                   placeholder="25 | 0.0 | hello | true">
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(paramCard);
+            }
+            
+            container.appendChild(grid);
+
+            // Add validation to new parameter fields only if user has attempted submit
+            if (hasAttemptedSubmit) {
+                const paramInputs = container.querySelectorAll('input, select');
+                paramInputs.forEach(input => {
+                    input.addEventListener('blur', () => {
+                        validateField(input);
+                        validateForm();
+                    });
+                    input.addEventListener('input', () => {
+                        validateField(input);
+                        validateForm();
+                    });
+                });
+            }
+        }
+        
+        function addParameter() {
+            if (parameterCount < 20) {
+                parameterCount++;
+                generateParameterFields();
+            }
+        }
+
+        function removeParameter(index) {
+            if (parameterCount > 1) {
+                parameterCount--;
+                generateParameterFields();
+            }
+        }
+
+        // Generate label fields
+        function generateLabelFields() {
+            const container = document.getElementById('labelsContainer');
+            container.innerHTML = '';
+            
+            const grid = document.createElement('div');
+            grid.className = 'parameters-grid';
+
+            for (let i = 0; i < labelCount; i++) {
+                const labelCard = document.createElement('div');
+                labelCard.className = 'parameter-card';
+                labelCard.innerHTML = `
+                    <div class="param-header">
+                        <span class="param-badge">Label ${i + 1}</span>
+                        ${labelCount > 1 ? `<button type="button" class="btn-remove-param" onclick="removeLabel(${i})" aria-label="Remove label">×</button>` : ''}
+                    </div>
+                    <div class="param-fields">
+                        <div class="form-group">
+                            <label>Label Value</label>
+                            <input type="text" name="label_${i}" 
+                                   placeholder="AE-EM | V2.0.0 | EM-CR-KH95-00">
+                            <span class="error-message"></span>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(labelCard);
+            }
+            
+            container.appendChild(grid);
+        }
+        
+        function addLabel() {
+            if (labelCount < 10) {
+                labelCount++;
+                generateLabelFields();
+            }
+        }
+
+        function removeLabel(index) {
+            if (labelCount > 1) {
+                labelCount--;
+                generateLabelFields();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initTabs();
+            generateParameterFields();
+            generateLabelFields();
+            
+            // Add operation change listener
+            const operationField = document.getElementById('operation');
+            if (operationField) {
+                operationField.addEventListener('change', onOperationChange);
+                // Trigger initial setup
+                onOperationChange();
+            }
+            
+            // Add listeners to server config fields to enable test button
+            const serverFields = ['cse_url', 'port', 'ae_name', 'container_name', 'origin'];
+            serverFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('input', updateTestButton);
+                    field.addEventListener('blur', updateTestButton);
+                }
+            });
+            
+            // Auto-strip protocol from CSE URL field
+            const cseUrlField = document.getElementById('cse_url');
+            const protocolField = document.getElementById('protocol');
+            const portField = document.getElementById('port');
+            
+            if (cseUrlField) {
+                cseUrlField.addEventListener('blur', function() {
+                    // Remove http://, https://, or any protocol from the input
+                    let value = this.value.trim();
+                    value = value.replace(/^https?:\/\//i, '');
+                    value = value.replace(/^[a-z]+:\/\//i, ''); // Remove any other protocol
+                    this.value = value;
+                });
+                
+                cseUrlField.addEventListener('input', function() {
+                    // Real-time removal of protocol as user types
+                    let value = this.value;
+                    if (value.match(/^https?:\/\//i)) {
+                        this.value = value.replace(/^https?:\/\//i, '');
+                    }
+                });
+            }
+            
+            // Auto-fill port based on protocol selection
+            if (protocolField && portField) {
+                protocolField.addEventListener('change', function() {
+                    if (!portField.value || portField.value === '80' || portField.value === '443' || portField.value === '8080') {
+                        portField.value = this.value === 'https' ? '443' : '8080';
+                    }
+                });
+            }
+            
+            // Generate initial parameter field
+            generateParameterFields();
+            
+            // Form submission handler
+            document.getElementById('configForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Mark that user has attempted to submit
+            hasAttemptedSubmit = true;
+
+            // Force validation with error display
+            const isFormValid = validateForm();
+            
+            if (!isFormValid) {
+                // Count total errors
+                const errorFields = document.querySelectorAll('.form-group.error');
+                const errorCount = errorFields.length;
+                
+                // Only show alert if there are actual errors
+                if (errorCount > 0) {
+                    // Find the first error and switch to that tab
+                    const firstError = document.querySelector('.form-group.error');
+                    if (firstError) {
+                        const tabPanel = firstError.closest('.tab-panel');
+                        if (tabPanel) {
+                            const tabId = tabPanel.id.replace('-tab', '');
+                            const tabButton = document.querySelector(`[data-tab="${tabId}"]`);
+                            if (tabButton) {
+                                tabButton.click();
+                            }
+                        }
+                        
+                        // Scroll to first error
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+
+                    alert(`Please fix ${errorCount} error${errorCount > 1 ? 's' : ''} before generating code.`);
+                    
+                    // Now add event listeners for real-time validation
+                    const allInputs = document.querySelectorAll('input, select');
+                    allInputs.forEach(input => {
+                        input.addEventListener('blur', () => {
+                            validateField(input);
+                            validateForm();
+                        });
+                        input.addEventListener('input', () => {
+                            validateField(input);
+                            validateForm();
+                        });
+                    });
+                }
+                
+                return;
+            }
+
+            const formData = new FormData(e.target);
+            
+            // Auto-determine protocol from port
+            const port = parseInt(formData.get('port'));
+            const protocol = (port === 443) ? 'https' : 'http';
+            
+            // Build configuration object
+            const config = {
+                controller: formData.get('controller'),
+                protocol: protocol,
+                cse_url: formData.get('cse_url'),
+                port: port,
+                ae_name: formData.get('ae_name'),
+                container_name: formData.get('container_name'),
+                origin: formData.get('origin'),
+                operation: formData.get('operation'),
+                parameters: [],
+                labels: []
+            };
+
+            // Collect parameters
+            for (let i = 0; i < parameterCount; i++) {
+                config.parameters.push({
+                    name: formData.get(`param_name_${i}`),
+                    type: formData.get(`param_type_${i}`),
+                    default: formData.get(`param_default_${i}`) || '0'
+                });
+            }
+
+            // Collect labels
+            for (let i = 0; i < labelCount; i++) {
+                const labelValue = formData.get(`label_${i}`);
+                if (labelValue && labelValue.trim()) {
+                    config.labels.push(labelValue.trim());
+                }
+            }
+
+            // Send to backend
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(config)
+                });
+
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    // Server returned an error
+                    alert('Error: ' + (result.error || 'Failed to generate code'));
+                    return;
+                }
+                
+                // Store in sessionStorage and redirect
+                sessionStorage.setItem('generatedCode', result.code);
+                sessionStorage.setItem('filename', result.filename);
+                sessionStorage.setItem('controller', result.controller);
+                
+                window.location.href = '/generate-view';
+                
+            } catch (error) {
+                alert('Error generating code: ' + error.message);
+            }
+            });
+        });
+    </script>
+
+    <div class="footer">
+        <div class="footer-center">
+            <p>oneM2M Code Generator &copy; 2025</p>
+        </div>
+        <a href="https://himanshu-portfolio-beryl.vercel.app/" target="_blank" class="developer-credit">
+            &lt;/&gt; Developed by Himanshu Fanibhare
+        </a>
+    </div>
+</body>
+</html>

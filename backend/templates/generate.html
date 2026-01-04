@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>oneM2M Code Generator - Generated Code</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-main">
+                <div class="header-branding">
+                    <div class="header-icon">🚀</div>
+                    <div class="header-text">
+                        <h1>oneM2M Code Generator</h1>
+                        <p class="header-subtitle">Your code is ready!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <a href="{{ url_for('index') }}" class="step completed" style="cursor: pointer;">
+                <div class="step-number">✓</div>
+                <div class="step-label">Select Platform</div>
+            </a>
+            <div class="step-connector completed"></div>
+            <a href="javascript:history.back()" class="step completed" style="cursor: pointer;">
+                <div class="step-number">✓</div>
+                <div class="step-label">Configure</div>
+            </a>
+            <div class="step-connector completed"></div>
+            <div class="step active">
+                <div class="step-number">3</div>
+                <div class="step-label">Generate</div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <strong>✅ Success!</strong> Your oneM2M client code has been generated successfully.
+        </div>
+
+        <div class="card">
+            <h2>Step 3: Your Generated Code</h2>
+            
+            <div class="mb-3">
+                <strong>Controller:</strong> <span id="controllerName"></span> | 
+                <strong>Filename:</strong> <code id="filenameName"></code>
+            </div>
+
+            <div class="code-preview">
+                <pre id="codeContent"></pre>
+            </div>
+
+            <div class="code-actions">
+                <button onclick="copyCode()" class="btn btn-success">📋 Copy to Clipboard</button>
+                <button onclick="downloadCode()" class="btn btn-primary">💾 Download File</button>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">🔄 Generate New Code</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📝 Next Steps</h2>
+            <div id="instructions"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>oneM2M Code Generator &copy; 2025</p>
+    </div>
+
+    <script>
+        // Load generated code from sessionStorage
+        document.addEventListener('DOMContentLoaded', function() {
+            const code = sessionStorage.getItem('generatedCode');
+            const filename = sessionStorage.getItem('filename');
+            const controller = sessionStorage.getItem('controller');
+
+            if (!code || !filename || !controller) {
+                window.location.href = '/';
+                return;
+            }
+
+            // Display code
+            document.getElementById('codeContent').textContent = code;
+            document.getElementById('filenameName').textContent = filename;
+            
+            // Display controller name
+            const controllerNames = {
+                'arduino_nano': 'Arduino Nano 33 IoT',
+                'esp32': 'ESP32',
+                'esp8266': 'ESP8266',
+                'python': 'Python'
+            };
+            document.getElementById('controllerName').textContent = controllerNames[controller] || controller;
+
+            // Display instructions
+            const instructionsDiv = document.getElementById('instructions');
+            
+            if (controller === 'python') {
+                instructionsDiv.innerHTML = `
+                    <ol>
+                        <li><strong>Save the file:</strong> Download as <code>${filename}</code></li>
+                        <li><strong>Install dependencies:</strong> <code>pip install requests</code></li>
+                        <li><strong>Run the script:</strong> <code>python ${filename}</code></li>
+                        <li><strong>Customize:</strong> Update WiFi credentials and server settings</li>
+                    </ol>
+                    <div class="alert alert-info mt-3">
+                        <strong>💡 Tip:</strong> The script will continuously send/receive data every 10 seconds. Press Ctrl+C to stop.
+                    </div>
+                `;
+            } else {
+                instructionsDiv.innerHTML = `
+                    <ol>
+                        <li><strong>Open Arduino IDE</strong></li>
+                        <li><strong>Install required libraries:</strong>
+                            <ul>
+                                ${controller === 'arduino_nano' ? '<li>WiFiNINA (Tools → Manage Libraries)</li>' : ''}
+                                ${controller === 'esp32' || controller === 'esp8266' ? '<li>ESP8266WiFi or WiFi.h (included in board package)</li>' : ''}
+                                ${controller === 'esp32' || controller === 'esp8266' ? '<li>HTTPClient (included in board package)</li>' : ''}
+                            </ul>
+                        </li>
+                        <li><strong>Copy the generated code</strong> into Arduino IDE</li>
+                        <li><strong>Update WiFi credentials:</strong> Replace <code>YOUR_WIFI_SSID</code> and <code>YOUR_WIFI_PASSWORD</code></li>
+                        <li><strong>Select your board:</strong> Tools → Board → ${controllerNames[controller]}</li>
+                        <li><strong>Upload to your board</strong></li>
+                        <li><strong>Open Serial Monitor</strong> (115200 baud) to see output</li>
+                    </ol>
+                    <div class="alert alert-warning mt-3">
+                        <strong>⚠️ Important:</strong> Make sure your oneM2M server is running and accessible before uploading the code.
+                    </div>
+                `;
+            }
+        });
+
+        function copyCode() {
+            const code = sessionStorage.getItem('generatedCode');
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-secondary');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove('btn-secondary');
+                    btn.classList.add('btn-success');
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy code: ' + err);
+            });
+        }
+
+        async function downloadCode() {
+            const code = sessionStorage.getItem('generatedCode');
+            const filename = sessionStorage.getItem('filename');
+
+            try {
+                const response = await fetch('/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ code, filename })
+                });
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                alert('Download failed: ' + error.message);
+            }
+        }
+    </script>
+
+    <div class="footer">
+        <div class="footer-center">
+            <p>oneM2M Code Generator &copy; 2025</p>
+        </div>
+        <a href="https://himanshu-portfolio-beryl.vercel.app/" target="_blank" class="developer-credit">
+            &lt;/&gt; Developed by Himanshu Fanibhare
+        </a>
+    </div>
+</body>
+</html>
