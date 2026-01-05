@@ -205,28 +205,29 @@ def test_post():
         
         url = f"{protocol}://{cse_url}:{port}/~/in-cse/in-name/{ae_name}/{container_name}/Data"
         
-        # Build payload - matching PYTHON_POST.py structure
-        inner_data = {}
+        # Build payload - array format [epoch, value1, value2, ...]
+        import time
+        inner_data = [int(time.time())]  # Start with epoch timestamp
+        
         for p in params:
             if isinstance(p, dict):
-                name = p.get('name')
                 value = p.get('default', '')
                 dtype = p.get('type', 'string')
                 
                 if dtype in ('int', 'integer'):
                     try:
-                        inner_data[name] = int(value)
+                        inner_data.append(int(value))
                     except:
-                        inner_data[name] = 0
+                        inner_data.append(0)
                 elif dtype in ('float', 'decimal'):
                     try:
-                        inner_data[name] = float(value)
+                        inner_data.append(float(value))
                     except:
-                        inner_data[name] = 0.0
+                        inner_data.append(0.0)
                 elif dtype in ('boolean', 'bool'):
-                    inner_data[name] = str(value).lower() in ('true', '1', 'yes')
+                    inner_data.append(1 if str(value).lower() in ('true', '1', 'yes') else 0)
                 else:
-                    inner_data[name] = str(value)
+                    inner_data.append(str(value))
         
         # Build oneM2M payload - matching PYTHON_POST.py structure
         payload = {
