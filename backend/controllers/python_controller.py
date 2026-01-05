@@ -1,6 +1,7 @@
 """
 Python code generator for oneM2M - Production-ready implementation.
 """
+import json
 
 
 def generate_python_code(config):
