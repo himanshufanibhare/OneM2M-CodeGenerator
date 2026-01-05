@@ -205,7 +205,7 @@ def test_post():
         
         url = f"{protocol}://{cse_url}:{port}/~/in-cse/in-name/{ae_name}/{container_name}/Data"
         
-        # Build payload
+        # Build payload - matching PYTHON_POST.py structure
         inner_data = {}
         for p in params:
             if isinstance(p, dict):
@@ -228,30 +228,30 @@ def test_post():
                 else:
                     inner_data[name] = str(value)
         
-        # Build oneM2M payload
+        # Build oneM2M payload - matching PYTHON_POST.py structure
         payload = {
             "m2m:cin": {
-                "con": json.dumps(inner_data)
+                "con": json.dumps(inner_data),
+                "lbl": labels if labels else [],
+                "cnf": "text"
             }
         }
-        
-        # Add labels if provided
-        if labels:
-            payload["m2m:cin"]["lbl"] = labels
         
         # Set headers
         headers = {
             'X-M2M-Origin': origin,
-            'Content-Type': 'application/json;ty=4',
-            'Accept': 'application/json'
+            'Content-Type': 'application/json;ty=4'
         }
         
         print(f"[DEBUG] POST URL: {url}")
         print(f"[DEBUG] Payload: {json.dumps(payload, indent=2)}")
         print(f"[DEBUG] Headers: {headers}")
         
-        # Execute POST request
-        response = requests.post(url, json=payload, headers=headers, timeout=10, verify=False)
+        # Execute POST request with try-except like PYTHON_POST.py
+        try:
+            response = requests.post(url, json=payload, headers=headers, timeout=10, verify=False)
+        except TypeError:
+            response = requests.post(url, data=json.dumps(payload), headers=headers, timeout=10, verify=False)
         
         print(f"[DEBUG] Response Status: {response.status_code}")
         

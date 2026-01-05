@@ -69,7 +69,7 @@ getData()
 '''
         return code
 
-    # Minimal POST template
+    # POST template - matches working PYTHON_POST.py structure
     # Build inner data from parameters
     inner_pairs = []
     if isinstance(params, list):
@@ -91,38 +91,53 @@ getData()
                 val = f'"{default}"'
             # For strings we keep quotes in the generated code
             if dtype in ('string', 'text'):
-                inner_pairs.append(f'    "{name}": "{default}"')
+                inner_pairs.append(f'        "{name}": "{default}"')
             else:
-                inner_pairs.append(f'    "{name}": {val}')
+                inner_pairs.append(f'        "{name}": {val}')
 
-    inner_block = '\n'.join(inner_pairs) if inner_pairs else '    # No data fields configured'
+    inner_block = ',\\n'.join(inner_pairs) if inner_pairs else '        # No data fields configured'
     labels_block = json.dumps(labels)
 
     code = f'''import requests
 import json
 
-url = "{protocol}://{cse_url}:{port}/~/in-cse/in-name/{ae_name}/{container_name}/Data"
+def create_cin(Om2mLable, value):
+    
+    headers = {{
+        'X-M2M-Origin': "{origin}",
+        'Content-type': 'application/json;ty=4'
+    }}
+    body = {{
+        "m2m:cin": {{
+            "con": "{{}}".format(value),
+            "lbl": Om2mLable,
+            "cnf": "text"
+        }}
+    }}
+    OM2M_URL = "{protocol}://{cse_url}:{port}/~/in-cse/in-name/{ae_name}/{container_name}/Data"
+    try:
+        response = requests.post(OM2M_URL, json=body, headers=headers)
+        print(f'Return code: {{response.status_code}}')
+        return response.status_code
+    except TypeError:
+        response = requests.post(OM2M_URL, data=json.dumps(body), headers=headers)
+        print(f'Return code: {{response.status_code}}')
+        return response.status_code
 
-inner = {{
+
+# Configure your data
+data = {{
 {inner_block}
 }}
 
-payload = {{
-    "m2m:cin": {{
-        "con": json.dumps(inner),
-        "lbl": {labels_block}
-    }}
-}}
+# Convert data to JSON string
+data_json = json.dumps(data)
 
-headers = {{
-    'X-M2M-Origin': '{origin}',
-    'Content-Type': 'application/json;ty=4'
-}}
+# Configure labels
+Om2mLable = {labels_block}
 
-response = requests.post(url, headers=headers, json=payload)
-
-print('Status:', response.status_code)
-print('Response:', response.text)
+# Send data
+create_cin(Om2mLable, data_json)
 '''
 
     return code
