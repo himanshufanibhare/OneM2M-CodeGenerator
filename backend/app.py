@@ -161,8 +161,11 @@ def test_get():
         
         print(f"[DEBUG] Response Status: {response.status_code}")
         
+        # Consider success only if status code is in 2xx range
+        is_success = 200 <= response.status_code < 300
+        
         return jsonify({
-            'success': True,
+            'success': is_success,
             'status_code': response.status_code,
             'response': response.text,
             'url': url
@@ -252,8 +255,11 @@ def test_post():
         
         print(f"[DEBUG] Response Status: {response.status_code}")
         
+        # Consider success only if status code is in 2xx range
+        is_success = 200 <= response.status_code < 300
+        
         return jsonify({
-            'success': True,
+            'success': is_success,
             'status_code': response.status_code,
             'response': response.text,
             'url': url,
