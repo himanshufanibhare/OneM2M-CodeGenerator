@@ -431,22 +431,31 @@ Solution:
 
 ### 1. Always Test First
 ✅ Use the "Test" button before generating code
+
 ✅ Verify green success status
+
 ✅ Read any error messages carefully
+
 
 ### 2. Start Simple
 ✅ Begin with 1-2 parameters
+
 ✅ Test with known working values
+
 ✅ Add complexity gradually
 
 ### 3. Naming Conventions
 ✅ Use clear parameter names: `temperature`, not `t`
+
 ✅ Avoid spaces and special characters
+
 ✅ Use lowercase or camelCase
 
 ### 4. Security
 ⚠️ Don't share credentials publicly
+
 ⚠️ Use HTTPS (port 443) for production
+
 ⚠️ Change default passwords
 
 ### 5. Development Workflow
