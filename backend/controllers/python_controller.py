@@ -71,28 +71,40 @@ getData()
         return code
 
     # POST template - array format [epoch, value1, value2, ...]
-    # Build value list from parameters (no labels)
-    value_list = []
+    # Build variable declarations and value list
+    variable_declarations = []
+    variable_names = []
+    
     if isinstance(params, list):
         for p in params:
             if not isinstance(p, dict):
                 continue
+            name = p.get('name')
             dtype = (p.get('type') or 'string').lower()
             default = p.get('default', '')
             
+            if not name:
+                continue
+                
+            # Create variable declaration
             if dtype in ('int', 'integer'):
                 val = default if default != '' else '0'
-                value_list.append(val)
+                variable_declarations.append(f'{name} = {val}')
+                variable_names.append(name)
             elif dtype in ('float', 'decimal'):
                 val = default if default != '' else '0.0'
-                value_list.append(val)
+                variable_declarations.append(f'{name} = {val}')
+                variable_names.append(name)
             elif dtype in ('boolean', 'bool'):
                 val = '1' if str(default).lower() in ('true', '1', 'yes') else '0'
-                value_list.append(val)
+                variable_declarations.append(f'{name} = {val}')
+                variable_names.append(name)
             else:
-                value_list.append(f'"{default}"')
+                variable_declarations.append(f'{name} = "{default}"')
+                variable_names.append(name)
 
-    values_str = ', '.join(value_list) if value_list else ''
+    var_declarations_str = '\n'.join(variable_declarations) if variable_declarations else '# No parameters configured'
+    values_in_array = ', '.join(variable_names) if variable_names else ''
     labels_block = json.dumps(labels)
 
     code = f'''import requests
@@ -123,9 +135,12 @@ def create_cin(Om2mLable, value):
         return response.status_code
 
 
+# Configure your data parameters
+{var_declarations_str}
+
 # Build data array: [epoch, value1, value2, ...]
 epoch = int(time.time())
-data = [epoch{", " + values_str if values_str else ""}]
+data = [epoch{", " + values_in_array if values_in_array else ""}]
 
 # Convert data array to JSON string
 data_json = json.dumps(data)
