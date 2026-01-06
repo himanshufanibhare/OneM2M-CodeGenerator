@@ -70,37 +70,34 @@ getData()
 '''
         return code
 
-    # POST template - matches working PYTHON_POST.py structure
-    # Build inner data from parameters
-    inner_pairs = []
+    # POST template - array format [epoch, value1, value2, ...]
+    # Build value list from parameters (no labels)
+    value_list = []
     if isinstance(params, list):
         for p in params:
             if not isinstance(p, dict):
                 continue
-            name = p.get('name')
             dtype = (p.get('type') or 'string').lower()
             default = p.get('default', '')
-            if not name:
-                continue
+            
             if dtype in ('int', 'integer'):
                 val = default if default != '' else '0'
+                value_list.append(val)
             elif dtype in ('float', 'decimal'):
                 val = default if default != '' else '0.0'
+                value_list.append(val)
             elif dtype in ('boolean', 'bool'):
-                val = default if default != '' else 'false'
+                val = '1' if str(default).lower() in ('true', '1', 'yes') else '0'
+                value_list.append(val)
             else:
-                val = f'"{default}"'
-            # For strings we keep quotes in the generated code
-            if dtype in ('string', 'text'):
-                inner_pairs.append(f'        "{name}": "{default}"')
-            else:
-                inner_pairs.append(f'        "{name}": {val}')
+                value_list.append(f'"{default}"')
 
-    inner_block = ',\\n'.join(inner_pairs) if inner_pairs else '        # No data fields configured'
+    values_str = ', '.join(value_list) if value_list else ''
     labels_block = json.dumps(labels)
 
     code = f'''import requests
 import json
+import time
 
 def create_cin(Om2mLable, value):
     
@@ -126,12 +123,11 @@ def create_cin(Om2mLable, value):
         return response.status_code
 
 
-# Configure your data
-data = {{
-{inner_block}
-}}
+# Build data array: [epoch, value1, value2, ...]
+epoch = int(time.time())
+data = [epoch{", " + values_str if values_str else ""}]
 
-# Convert data to JSON string
+# Convert data array to JSON string
 data_json = json.dumps(data)
 
 # Configure labels

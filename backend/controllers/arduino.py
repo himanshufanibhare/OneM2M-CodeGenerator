@@ -45,8 +45,8 @@ def generate_arduino_code(config):
     # Build base URL for comments
     base_url = f"{protocol}://{cse_url}:{port}"
     
-    # Build ArduinoJson field assignments for inner data
-    json_assignments = ""
+    # Build array of values (no labels) - [epoch, value1, value2, ...]
+    value_list = []
     if isinstance(params, list):
         for p in params:
             name = p.get('name') if isinstance(p, dict) else None
@@ -55,22 +55,17 @@ def generate_arduino_code(config):
             if not name:
                 continue
             if dtype in ('string', 'text'):
-                json_assignments += f'  innerDoc["{name}"] = "{default}";\n'
+                value_list.append(f'"{default}"')
             elif dtype in ('int', 'integer'):
-                json_assignments += f'  innerDoc["{name}"] = {default};\n'
+                value_list.append(str(default))
             elif dtype in ('float', 'decimal'):
-                json_assignments += f'  innerDoc["{name}"] = {default};\n'
+                value_list.append(str(default))
             elif dtype in ('boolean', 'bool'):
-                val = 'true' if str(default).lower() in ('1', 'true', 'yes') else 'false'
-                json_assignments += f'  innerDoc["{name}"] = {val};\n'
-    elif isinstance(params, dict):
-        for key, value in params.items():
-            if isinstance(value, str):
-                json_assignments += f'  innerDoc["{key}"] = "{value}";\n'
-            elif isinstance(value, (int, float)):
-                json_assignments += f'  innerDoc["{key}"] = {value};\n'
-            elif isinstance(value, bool):
-                json_assignments += f'  innerDoc["{key}"] = {"true" if value else "false"};\n'
+                val = '1' if str(default).lower() in ('1', 'true', 'yes') else '0'
+                value_list.append(val)
+    
+    values_str = ', " + String(' + ') + ", " + String('.join(value_list) + ')' if value_list else ''
+
     
     # If GET operation requested, produce minimal GET sample
     if operation == 'GET':
@@ -250,17 +245,13 @@ void postOneM2MData() {{
   
   Serial.println("\\nSending POST request...");
   
-  // Build inner JSON data using ArduinoJson
-  StaticJsonDocument<256> innerDoc;
-{json_assignments}
-  
-  // Serialize inner data to string
-  String innerJson;
-  serializeJson(innerDoc, innerJson);
+  // Build data array: [epoch, value1, value2, ...]
+  unsigned long epoch = millis() / 1000; // Seconds since boot (use RTC for actual time)
+  String dataArray = "[" + String(epoch){values_str} + "]";
   
   // Build oneM2M cin payload
   StaticJsonDocument<512> cinDoc;
-{labels_code}  cinDoc["m2m:cin"]["con"] = innerJson;
+{labels_code}  cinDoc["m2m:cin"]["con"] = dataArray;
   
   String payload;
   serializeJson(cinDoc, payload);

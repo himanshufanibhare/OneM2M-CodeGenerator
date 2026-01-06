@@ -24,26 +24,28 @@ def generate_esp8266_code(config):
     use_ssl = protocol == 'https'
     base_url = f"{protocol}://{cse_url}:{port}"
 
-    # Build ArduinoJson field assignments for POST
-    json_assignments = ""
+    # Build array of values (no labels) - [epoch, value1, value2, ...]
+    value_list = []
     if isinstance(params, list):
         for p in params:
             if not isinstance(p, dict):
                 continue
-            name = p.get('name')
             dtype = (p.get('type') or 'string').lower()
             default = p.get('default', '')
+            name = p.get('name')
             if not name:
                 continue
             if dtype in ('string', 'text'):
-                json_assignments += f'  innerDoc["{name}"] = "{default}";\n'
+                value_list.append(f'"{default}"')
             elif dtype in ('int', 'integer'):
-                json_assignments += f'  innerDoc["{name}"] = {default or 0};\n'
+                value_list.append(str(default or 0))
             elif dtype in ('float', 'decimal'):
-                json_assignments += f'  innerDoc["{name}"] = {default or 0.0};\n'
+                value_list.append(str(default or 0.0))
             elif dtype in ('boolean', 'bool'):
-                val = 'true' if str(default).lower() in ('1', 'true', 'yes') else 'false'
-                json_assignments += f'  innerDoc["{name}"] = {val};\n'
+                val = '1' if str(default).lower() in ('1', 'true', 'yes') else '0'
+                value_list.append(val)
+    
+    values_str = ', " + String(' + ') + ", " + String('.join(value_list) + ')' if value_list else ''
 
     # Build labels code
     labels_code = ""
@@ -225,17 +227,13 @@ void postOneM2MData() {{
     return;
   }}
 
-  // Build inner JSON data using ArduinoJson
-  StaticJsonDocument<256> innerDoc;
-{json_assignments}
-  
-  // Serialize inner data to string
-  String innerJson;
-  serializeJson(innerDoc, innerJson);
+  // Build data array: [epoch, value1, value2, ...]
+  unsigned long epoch = millis() / 1000; // Seconds since boot (use RTC for actual time)
+  String dataArray = "[" + String(epoch){values_str} + "]";
   
   // Build oneM2M cin payload
   StaticJsonDocument<512> cinDoc;
-{labels_code}  cinDoc["m2m:cin"]["con"] = innerJson;
+{labels_code}  cinDoc["m2m:cin"]["con"] = dataArray;
   
   String payload;
   serializeJson(cinDoc, payload);
