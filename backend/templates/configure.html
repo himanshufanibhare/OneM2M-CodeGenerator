@@ -850,6 +850,23 @@
         // Parameter management
         function generateParameterFields() {
             const container = document.getElementById('parametersContainer');
+            
+            // Save existing values before clearing
+            const existingValues = [];
+            for (let i = 0; i < parameterCount; i++) {
+                const nameInput = document.querySelector(`[name="param_name_${i}"]`);
+                const typeInput = document.querySelector(`[name="param_type_${i}"]`);
+                const defaultInput = document.querySelector(`[name="param_default_${i}"]`);
+                
+                if (nameInput || typeInput || defaultInput) {
+                    existingValues[i] = {
+                        name: nameInput?.value || '',
+                        type: typeInput?.value || '',
+                        default: defaultInput?.value || ''
+                    };
+                }
+            }
+            
             container.innerHTML = '';
 
             for (let i = 0; i < parameterCount; i++) {
@@ -863,21 +880,21 @@
                     <div class="param-fields">
                         <div class="form-group">
                             <label>Field Name <span class="required">*</span></label>
-                            <input type="text" name="param_name_${i}" placeholder="temperature | humidity | status" required>
+                            <input type="text" name="param_name_${i}" placeholder="temperature | humidity | status" value="${existingValues[i]?.name || ''}" required>
                         </div>
                         <div class="form-group">
                             <label>Data Type <span class="required">*</span></label>
                             <select name="param_type_${i}" required>
                                 <option value="">Select type...</option>
-                                <option value="int">Integer</option>
-                                <option value="float">Decimal</option>
-                                <option value="string">Text</option>
-                                <option value="boolean">True/False</option>
+                                <option value="int" ${existingValues[i]?.type === 'int' ? 'selected' : ''}>Integer</option>
+                                <option value="float" ${existingValues[i]?.type === 'float' ? 'selected' : ''}>Decimal</option>
+                                <option value="string" ${existingValues[i]?.type === 'string' ? 'selected' : ''}>Text</option>
+                                <option value="boolean" ${existingValues[i]?.type === 'boolean' ? 'selected' : ''}>True/False</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Default Value</label>
-                            <input type="text" name="param_default_${i}" placeholder="25 | 0.0 | hello | true">
+                            <input type="text" name="param_default_${i}" placeholder="25 | 0.0 | hello | true" value="${existingValues[i]?.default || ''}">
                         </div>
                     </div>
                 `;
@@ -902,6 +919,16 @@
         // Label management
         function generateLabelFields() {
             const container = document.getElementById('labelsContainer');
+            
+            // Save existing values before clearing
+            const existingValues = [];
+            for (let i = 0; i < labelCount; i++) {
+                const labelInput = document.querySelector(`[name="label_${i}"]`);
+                if (labelInput) {
+                    existingValues[i] = labelInput.value || '';
+                }
+            }
+            
             container.innerHTML = '';
 
             for (let i = 0; i < labelCount; i++) {
@@ -915,7 +942,7 @@
                     <div class="param-fields">
                         <div class="form-group">
                             <label>Label Value</label>
-                            <input type="text" name="label_${i}" placeholder="AE-EM | V2.0.0 | EM-CR-KH95-00">
+                            <input type="text" name="label_${i}" placeholder="AE-EM | V2.0.0 | EM-CR-KH95-00" value="${existingValues[i] || ''}">
                         </div>
                     </div>
                 `;
