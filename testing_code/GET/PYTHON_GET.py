@@ -1,7 +1,7 @@
 import requests
 import json
 
-url = "http://onem2m.iiit.ac.in:443/~/in-cse/in-name/AE-SL/SL-PL96-00/Data/la"
+url = "http://onem2m.iiit.ac.in:443/~/in-cse/in-name/AE-SR/SR-EM/SR-EM-KH04-01/Data/la"
 
 payload = {}
 headers = {
